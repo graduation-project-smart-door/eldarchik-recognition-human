@@ -3,8 +3,8 @@ import numpy as np
 import cv2
 import tensorflow as tf
 
-W = 320
-H = 240
+W = 640
+H = 480
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
