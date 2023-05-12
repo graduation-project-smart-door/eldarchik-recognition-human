@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cams</title>
+
+  <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet">
+</head>
+
+
+<body>
+  <h1>WebSocket Video Stream</h1>
+  <video id="video" autoplay></video>
+  <script>
+    var video = document.getElementById("video");
+    var websocket = new WebSocket("ws://localhost:8082/ws");
+
+    websocket.onmessage = function (event) {
+      console.log(event);
+    }
+    // websocket.binaryType = 'arraybuffer';
+    // websocket.onmessage = function (event) {
+    //   var bytes = new Uint8Array(event.data);
+    //   var blob = new Blob([bytes], { type: "image/jpeg" });
+    //   var urlCreator = window.URL || window.webkitURL;
+    //   video.src = urlCreator.createObjectURL(blob);
+    // };
+  </script>
+  <!--  <script src="{{ url_for('static', path='/script.js') }}"></script>-->
+</body>
+
+</html>

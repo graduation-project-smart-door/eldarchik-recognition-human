@@ -25,6 +25,9 @@ def set_gpus() -> None:
 set_gpus()
 
 width, height = 640, 480
+depth_cam_width, depth_cam_height = 320, 240
+
+position = (60,220)
 
 fmt = pyvirtualcam.PixelFormat.BGR
 
@@ -70,8 +73,9 @@ num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 print("[INFO] Model loaded.")
 colors_hash = {}
 
-with pyvirtualcam.Camera(width=width, height=height, fps=30, fmt=fmt) as cam:
+with pyvirtualcam.Camera(device='Unity Video Capture #2',width=width, height=height, fps=30, fmt=fmt) as cam, pyvirtualcam.Camera(device='Unity Video Capture',width=depth_cam_width, height=depth_cam_height, fps=30, fmt=fmt) as cam_depth:
     print(f'Virtual camera created: {cam.device} ({cam.width}x{cam.height} @ {cam.fps}fps)')
+    print(f'Virtual depth camera created: {cam_depth.device} ({cam_depth.width}x{cam_depth.height} @ {cam_depth.fps}fps)')
 
     while True:
         frames = pipeline.wait_for_frames()
@@ -85,8 +89,10 @@ with pyvirtualcam.Camera(width=width, height=height, fps=30, fmt=fmt) as cam:
         # i.e. a single-column array, where each item in the column has the pixel RGB value
         image_expanded = np.expand_dims(color_image, axis=0)
         # Perform the actual detection by running the model with the image as input
-        distance_to_object = (int(depth_image[120,160]/4/10))
-        if(distance_to_object > 50 and distance_to_object < 110): 
+        distance_to_object = int(depth_image[120,160]/4/10)
+        if(distance_to_object > 50 and distance_to_object < 110):
+    
+     
             (boxes, scores, classes, num) = sess.run([detection_boxes, detection_scores, detection_classes, num_detections],
                                                         feed_dict={image_tensor: image_expanded})
             
@@ -131,7 +137,30 @@ with pyvirtualcam.Camera(width=width, height=height, fps=30, fmt=fmt) as cam:
             # cv2.imshow('RealSense', color_image)
             # print(color_image.shape)
             # print(int(depth_image[120,160]/4/10))
-            cv2.waitKey(1)
+        depth_frame = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+        depth_frame = cv2.resize(depth_frame, (depth_cam_width, depth_cam_height))
+        cv2.putText(
+            depth_frame,
+            str(f"distance to object: {distance_to_object}"),
+            position,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.5,
+            lineType=cv2.LINE_AA, 
+            thickness=4,
+            color=(255, 255, 255, 255),
+        )
+        cv2.putText(
+            depth_frame,
+            str(f"distance to object: {distance_to_object}"),
+            position,
+            cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.5,
+            lineType=cv2.LINE_AA, 
+            thickness=2,
+            color=(209, 80, 0, 255),
+        )        
+        cam_depth.send(depth_frame)
+        cv2.waitKey(1)
 
 print("[INFO] stop streaming ...")
 pipeline.stop()
