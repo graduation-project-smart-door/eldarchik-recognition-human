@@ -1,2 +1,7 @@
 venv
 model
+package-lock
+package
+.idea
+__pycache__
+
