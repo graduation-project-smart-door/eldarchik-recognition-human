@@ -1,3 +1,4 @@
+import os
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -73,7 +74,7 @@ num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 print("[INFO] Model loaded.")
 colors_hash = {}
 
-with pyvirtualcam.Camera(device='Unity Video Capture #2',width=width, height=height, fps=30, fmt=fmt) as cam, pyvirtualcam.Camera(device='Unity Video Capture',width=depth_cam_width, height=depth_cam_height, fps=30, fmt=fmt) as cam_depth:
+with pyvirtualcam.Camera(device='Unity Video Capture',width=width, height=height, fps=30, fmt=fmt) as cam, pyvirtualcam.Camera(device='Unity Video Capture #2',width=depth_cam_width, height=depth_cam_height, fps=30, fmt=fmt) as cam_depth:
     print(f'Virtual camera created: {cam.device} ({cam.width}x{cam.height} @ {cam.fps}fps)')
     print(f'Virtual depth camera created: {cam_depth.device} ({cam_depth.width}x{cam_depth.height} @ {cam_depth.fps}fps)')
 
@@ -137,6 +138,10 @@ with pyvirtualcam.Camera(device='Unity Video Capture #2',width=width, height=hei
             # cv2.imshow('RealSense', color_image)
             # print(color_image.shape)
             # print(int(depth_image[120,160]/4/10))
+        else:
+            frame = cv2.imread("black.jpg", cv2.IMREAD_ANYCOLOR)
+            frame = cv2.resize(frame, (width, height))
+            cam.send(frame)
         depth_frame = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
         depth_frame = cv2.resize(depth_frame, (depth_cam_width, depth_cam_height))
         cv2.putText(
